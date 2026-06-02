@@ -1,32 +1,21 @@
 { pkgs, ... }:
 {
-  imports = [
-    ./firefox/policies.nix
-    ./firefox/preferences.nix
-    ./thunderbird/policies.nix
-    ./thunderbird/preferences.nix
-  ];
-
-  users.users.ponfertato = {
-    isNormalUser = true;
-    description = "ponfertato";
-    extraGroups = [
-      "adbusers"
-      "audio"
-      "cups"
-      "docker"
-      "flatpak"
-      "gamemode"
-      "input"
-      "libvirt"
-      "networkmanager"
-      "plugdev"
-      "scanner"
-      "sshd"
-      "video"
-      "wheel"
-    ];
-  };
+  environment.etc."gitconfig".text = ''
+    [user]
+      name = ponfertato
+      email = ponfertato@ya.ru
+    [core]
+      excludesFile = /etc/gitignore_global
+      editor = nano
+    [init]
+      defaultBranch = main
+    [pull]
+      rebase = true
+    [push]
+      autoSetupRemote = true
+    [lfs]
+      repositoryformat = 0
+  '';
 
   environment.etc."gitignore_global".text = ''
     *~
@@ -37,70 +26,25 @@
     node_modules/
   '';
 
-  environment.systemPackages = with pkgs; [
-    android-tools
-    appimage-run
-    audacity
-    corefonts
-    curl
-    gimp
-    git
-    kdePackages.kate
-    kdePackages.tokodon
-    krita
-    lazygit
-    libreoffice
-    nano
-    qbittorrent
-    remmina
-    thunderbird
-    unstable.joplin-desktop
-    unstable.keepassxc
+  environment.packages = with pkgs; [
     unstable.lazydocker
-    unstable.nextcloud-client
-    unstable.nextcloud-talk-desktop
-    unstable.telegram-desktop
-    unstable.v2rayn
-    unstable.vscodium
-    vlc
-    wget
+    unstable.joplin-desktop
+    unstable.neovim
+    tmux
   ];
 
-  programs.git = {
-    enable = true;
-    lfs.enable = true;
-    config = {
-      user = {
-        name = "ponfertato";
-        email = "ponfertato@ya.ru";
-      };
-      core = {
-        excludesFile = "/etc/gitignore_global";
-      };
-    };
-  };
-
-  programs.firefox = {
-    enable = true;
-    languagePacks = [
-      "en-US"
-      "ru"
-    ];
-  };
-
-  programs.thunderbird.enable = true;
-
-  programs.bash.shellAliases = {
-    nix-check = "nix flake check";
-    nix-gc = "sudo nix-collect-garbage -d && sudo nix store optimise";
-    nix-roll = "sudo nixos-rebuild switch --rollback";
-    nix-switch = "sudo nixos-rebuild switch --flake .#$(hostname) --impure";
-    nix-update = "nix flake update";
-  };
-
-  programs.kdeconnect.enable = true;
-  programs.obs-studio = {
-    enable = true;
-    enableVirtualCamera = true;
-  };
+  env.shellInit = ''
+    alias nix-od="nix-on-droid switch --flake ~/.config/nixpkgs#$(hostname)"
+    alias nix-update="cd ~/.config/nixpkgs && nix flake update"
+    alias nix-check="cd ~/.config/nixpkgs && nix flake check"
+    alias nix-roll="nix-on-droid switch --rollback"
+    alias nix-gc="nix-collect-garbage -d"
+    alias ll="ls -lah"
+    alias la="ls -A"
+    alias ..="cd .."
+    alias ...="cd ../.."
+    alias gs="git status"
+    alias gl="git log --oneline --graph"
+    alias gp="git pull --rebase"
+  '';
 }
